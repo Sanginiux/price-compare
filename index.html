@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Real-Time Price Compare</title>
+    <title>Compare Product Prices</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .result {
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Compare Product Prices</h1>
-  <input id="product" placeholder="Enter product name..." />
-  <button onclick="search()">Search</button>
-  <div id="results"></div>
+    <h1>Compare Product Prices</h1>
+    <form method="POST">
+        <input type="text" name="query" placeholder="Enter product name" required>
+        <button type="submit">Search</button>
+    </form>
 
-  <script>
-    async function search() {
-      const q = document.getElementById("product").value;
-      const res = await fetch(`/api/compare?product=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      const out = data.prices.map(p => `
-        <div>
-          <strong>${p.store}</strong> - ₹${p.price} <br/>
-         <a href="{{ result['link'] }}" target="_blank" rel="noopener noreferrer">{{ result['title'] }}</a>
-
-        </div>`).join("");
-      document.getElementById("results").innerHTML = out;
-    }
-  </script>
+    {% if results %}
+        <h2>Results:</h2>
+        {% for result in results %}
+            <div class="result">
+                <strong>{{ result['source'] }}</strong> - <span>{{ result['price'] }}</span><br>
+                <a href="{{ result['link'] }}" target="_blank" rel="noopener noreferrer">{{ result['title'] }}</a>
+            </div>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>
