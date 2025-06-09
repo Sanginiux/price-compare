@@ -1,31 +1,39 @@
-from flask import Flask, request, jsonify, render_template
-import requests
 import os
+import requests
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
-API_KEY = os.getenv("SERPAPI_KEY")  # Set your SerpAPI key in env
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    results = []
+    if request.method == 'POST':
+        query = request.form['query']
+        api_key = os.getenv('SERPAPI_KEY')
+        url = 'https://serpapi.com/search.json'
 
-@app.route("/api/compare")
-def compare():
-    product = request.args.get("product", "")
-    if not product:
-        return jsonify(prices=[], error="Product name required"), 400
-    url = f"https://serpapi.com/search.json?engine=google_shopping&q={product}&api_key={API_KEY}"
-    data = requests.get(url).json()
-    prices = [
-        {
-            "title": item.get("title"),
-            "price": item.get("extracted_price"),
-            "store": item.get("source"),
-            "link": item.get("link")
+        params = {
+            'engine': 'google',
+            'q': query,
+            'google_domain': 'google.co.in',
+            'gl': 'in',
+            'hl': 'en',
+            'api_key': api_key,
+            'tbm': 'shop'
         }
-        for item in data.get("shopping_results", [])
-    ]
-    return jsonify(prices=prices)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        for item in data.get('shopping_results', []):
+            link = item.get('link')
+            if link and link.startswith('http'):
+                results.append({
+                    'source': item.get('source', 'Unknown'),
+                    'price': item.get('price', 'N/A'),
+                    'title': item.get('title', 'No title'),
+                    'link': link
+                })
+
+    return render_template('index.html', results=results)
+
