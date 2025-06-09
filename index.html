@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-Time Price Compare</title>
+</head>
+<body>
+  <h1>Compare Product Prices</h1>
+  <input id="product" placeholder="Enter product name..." />
+  <button onclick="search()">Search</button>
+  <div id="results"></div>
+
+  <script>
+    async function search() {
+      const q = document.getElementById("product").value;
+      const res = await fetch(`/api/compare?product=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const out = data.prices.map(p => `
+        <div>
+          <strong>${p.store}</strong> - ₹${p.price} <br/>
+          <a href="${p.link}" target="_blank">${p.title}</a>
+        </div>`).join("");
+      document.getElementById("results").innerHTML = out;
+    }
+  </script>
+</body>
+</html>
